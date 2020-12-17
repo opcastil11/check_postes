@@ -1,0 +1,111 @@
+<div class="container">
+  <nav class="navbar">
+    <div class="navbar-item">
+      <h1 class="title is-4" style="margin-right:10px;">Display Events Detected
+      </h1>
+      <div class="col">
+          <div ngbDropdown class="d-inline-block">
+            <button class="btn btn-outline-primary" id="dropdownBasic1" ngbDropdownToggle>{{button_status}}</button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
+              <tr *ngFor="let status of status_s">
+                <button ngbDropdownItem (click)="SetfilterLogsByStatus(status)">{{status}}</button>
+            </tr>
+            </div>
+          </div>
+      </div>
+      <div class="col">
+          <div ngbDropdown class="d-inline-block">
+            <button class="btn btn-outline-primary" style="margin-left:15px;" id="dropdownBasic1" ngbDropdownToggle>{{button_norme}}</button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
+              <tr *ngFor="let norme of normes">
+                <button ngbDropdownItem (click)="SetfilterLogsByNorme(norme)">{{norme}}</button>
+            </tr>
+            </div>
+          </div>
+      </div>
+      <h4 style="margin-left:100px;"> 
+        <a href="http://localhost:9091/download" download>
+          Download excel
+        </a>
+      </h4>
+      <h4 style="margin-left:100px;"> 
+        <a href="#" (click)="clearExcel()">
+          Clear excel
+        </a>
+      </h4>
+    </div>
+  </nav>
+  <table class="table is-fullwidth is-hoverable is-bordered">
+    <thead>
+      <tr>
+        <th>ID Event</th>
+        <th>Date</th>
+<!--         <th style="width: 15%;">File</th>
+ -->        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Dmin_Telecom</th>
+        <th>Norme</th>
+        <th>Image</th>
+        <th>Reviewed</th>
+        <th>Status</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let log of logs_to_show">
+        <td>{{ log.id }}</td>
+        <td>{{ log.date }}</td>
+<!--         <td style="width: 15%;">{{ log.file }}</td> -->
+        <td>{{ log.lat_p }}</td>
+        <td>{{ log.lon_p }}</td>
+        <td>
+          <div class="row">
+            <input #input_dmin_telecom value={{log.dmin_telecom}} style="width: 50%; margin-left: 6px;">
+            <button class="btn btn-outline-primary" (click)="editDminLog(log,input_dmin_telecom)" style="width:36%;margin-left: 9px;font-size: 10px;">Save</button>
+          </div>
+        </td>
+        <td>{{ log.norme }}</td>
+        <td>
+          <figure class="image is-3by2" (click)="onImgClick(log.id)">
+            <img [src]=pathImage(log.image_path) alt="" onerror="errorImage(this)" />
+          </figure>
+        </td>
+        <td>{{ log.last_time_reviewed }}</td>
+        <td>
+            <div ngbDropdown class="d-inline-block">
+              <button class="btn btn-outline-primary" id="dropdownBasic1" ngbDropdownToggle>{{log.status}}</button>
+              <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
+                <tr *ngFor="let status of status_edit">
+                  <button ngbDropdownItem (click)="editStatusLog(log,status)">{{status}}</button>
+              </tr>
+              </div>
+            </div>
+        </td>
+        <td>
+          <button (click)="deleteRecord(log)">Borrar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal is-active" *ngIf="displayModal">
+  <div class="modal-background"></div>
+  <div class="modal-card is-clipped">
+    <header class="modal-card-head">
+      <p class="modal-card-title">
+        {{ currentLog.id }} {{ currentLog.norme }}
+      </p>
+      <button
+        class="delete"
+        aria-label="close"
+        (click)="onCloseClick()"
+      ></button>
+    </header>
+    <section class="modal-card-body">
+      <p class="image is-4by3">
+        <img [src]=pathImage(currentLog.image_path) />
+      </p>
+    </section>
+  </div>
+</div>
