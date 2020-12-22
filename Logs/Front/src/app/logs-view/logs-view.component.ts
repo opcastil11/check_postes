@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-logs-view',
@@ -9,18 +10,24 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class LogsViewComponent implements OnInit, OnDestroy {
   button_status: string;
   button_norme: string;
+  button_deleted: string;
   filterByStatus: string;
   filterByNorme: string;
+  filterByDeleted: string;
   logs: any;
   logs_to_show: any;
   status_s: any;
   status_edit: any;
   normes: any;
-  normes_edit: any;
+  deleted_s: any;
+  deleted_edit: any;
   displayModal = false;
   currentLog: any;
   intervalId: any;
   corsHeaders:any;
+  p: number = 1;
+  filtered: any;
+
 
   constructor(private http: HttpClient) { }
 
@@ -34,10 +41,14 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     this.logs = [];
     this.filterByStatus = "All";
     this.filterByNorme = "All";
+    this.filterByDeleted = "All";
     this.button_status = "All";
     this.button_norme = "All";
+    this.button_deleted = "All";
     this.status_s = ["All","reviewed","unreviewed"];
     this.status_edit = ["reviewed","unreviewed"];
+    this.deleted_s = ["All","active","deleted"];
+    this.deleted_edit = ["active","deleted"];
     this.normes = ["All","Fuera de norma","En norma"];
     setTimeout(function(){ location.reload(); }, 1200000);
     const fetchResponse = await fetch('http://localhost:9091/records');
@@ -75,6 +86,13 @@ export class LogsViewComponent implements OnInit, OnDestroy {
   };
 
 
+  SetfilterLogsByDeleted(value: any){
+    this.filterByDeleted = value;
+    this.filterLogs();
+  };
+
+
+
   filterLogs(){
     if (this.filterByStatus === "All" && this.filterByNorme === "All"){
       var filtered =  this.logs;
@@ -91,7 +109,14 @@ export class LogsViewComponent implements OnInit, OnDestroy {
       this.button_status = this.filterByStatus;
       this.button_norme = this.filterByNorme;
     }
-    this.logs_to_show = filtered;
+      this.logs_to_show = filtered;
+
+      if (this.filterByDeleted === "All"){
+        this.button_deleted = "All";
+      }else{
+        this.logs_to_show = this.logs_to_show.filter(log => log.deleted == this.filterByDeleted);
+        this.button_deleted = this.filterByDeleted;
+      };
   };
 
   errorImage(image: any){
@@ -116,10 +141,10 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     var path = 'http://localhost:9091/records/'+id+'?type=status&value='+status;     
     this.http.put<any>(path, requestOptions).subscribe(data => {
       var log_d = this.logs.filter(log => log.id == id);
-      log_d.status = data[13];
-      log.status = data[13];
-      log_d.last_time_reviewed = data[12];
-      log.last_time_reviewed = data[12];
+      log_d.status = data[25];
+      log.status = data[25];
+      log_d.last_time_reviewed = data[24];
+      log.last_time_reviewed = data[24];
       this.filterLogs(); 
     },error => {
         console.error('There was an error!', error);
@@ -140,8 +165,8 @@ export class LogsViewComponent implements OnInit, OnDestroy {
       log.dmin_telecom = data[4];
       log_d.norme = data[5];
       log.norme = data[5];
-      log_d.last_time_reviewed = data[12];
-      log.last_time_reviewed = data[12];
+      log_d.last_time_reviewed = data[24];
+      log.last_time_reviewed = data[24];
       this.filterLogs();
     },error => {
         console.error('There was an error!', error);
@@ -149,29 +174,49 @@ export class LogsViewComponent implements OnInit, OnDestroy {
 
   };
 
-  deleteRecord(log: any){
+  editDeleteLog(log: any, deleted:any){
     var id = log.id;
     var requestOptions = {                                                                                                                                                                                 
       headers: this.corsHeaders, 
     };
-    var path = 'http://localhost:9091/records/'+id; 
-    this.http.delete<any>(path, requestOptions).subscribe(data => {
+    var path = 'http://localhost:9091/records/'+id+'?type=deleted&value='+deleted; 
+    this.http.put<any>(path, requestOptions).subscribe(data => {
       var log_d = this.logs.filter(log => log.id == id);
-      // log_d.dmin_telecom = data[4];
-      // log.dmin_telecom = data[4];
-      // log_d.norme = data[5];
-      // log.norme = data[5];
-      // log_d.last_time_reviewed = data[12];
-      // log.last_time_reviewed = data[12];
+      log_d.deleted = data[26];
+      log.deleted = data[26];
       this.filterLogs();
     },error => {
         console.error('There was an error!', error);
     })
+
   };
 
+
+  // deleteRecord(log: any){
+  //   var id = log.id;
+  //   var requestOptions = {                                                                                                                                                                                 
+  //     headers: this.corsHeaders, 
+  //   };
+  //   var path = 'http://localhost:9091/records/'+id;
+  //   this.http.delete<any>(path, requestOptions).subscribe(data => {
+  //     this.logs = this.logs.filter(function(log) { return log.id != id });
+  //     // log_d.dmin_telecom = data[4];
+  //     // log.dmin_telecom = data[4];
+  //     // log_d.norme = data[5];
+  //     // log.norme = data[5];
+  //     // log_d.last_time_reviewed = data[12];
+  //     // log.last_time_reviewed = data[12];
+  //     this.filterLogs();
+  //   },error => {
+  //       console.error('There was an error!', error);
+  //   })
+  // };
+
   async clearExcel(){
-    await fetch('http://localhost:9091/clear'); 
-    console.log("clearExcel");
-    setTimeout(function(){ location.reload();}, 5000);
+    if(confirm("Estas seguro que deseas limpiar el excel?")) {
+      await fetch('http://localhost:9091/clear'); 
+      console.log("clearExcel");
+      setTimeout(function(){ location.reload();}, 2000);
+    }
   };
 }

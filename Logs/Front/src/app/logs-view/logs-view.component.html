@@ -23,22 +23,41 @@
             </div>
           </div>
       </div>
-      <h4 style="margin-left:100px;"> 
+      <div class="col">
+          <div ngbDropdown class="d-inline-block">
+            <button class="btn btn-outline-primary" style="margin-left:30px;" id="dropdownBasic1" ngbDropdownToggle>{{button_deleted}}</button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
+              <tr *ngFor="let delete of deleted_s">
+                <button ngbDropdownItem (click)="SetfilterLogsByDeleted(delete)">{{delete}}</button>
+            </tr>
+            </div>
+          </div>
+      </div>
+      <h4 style="margin-left:50px;"> 
         <a href="http://localhost:9091/download" download>
-          Download excel
+          Download revised excel
         </a>
       </h4>
-      <h4 style="margin-left:100px;"> 
+      <h4 style="margin-left:50px;"> 
+        <a href="http://localhost:9091/download_final" download>
+          Download final excel
+        </a>
+      </h4>
+      <h4 style="margin-left:50px;"> 
         <a href="#" (click)="clearExcel()">
           Clear excel
         </a>
       </h4>
     </div>
   </nav>
+  <nav style="z-index: 0;" class="navbar">
+    <input  class="form-control" type="text" name="search" [(ngModel)]="filtered">      
+  </nav>
   <table class="table is-fullwidth is-hoverable is-bordered">
     <thead>
       <tr>
         <th>ID Event</th>
+        <th>File</th>
         <th>Date</th>
 <!--         <th style="width: 15%;">File</th>
  -->        <th>Latitude</th>
@@ -46,14 +65,17 @@
         <th>Dmin_Telecom</th>
         <th>Norme</th>
         <th>Image</th>
+        <th>Video T</th>
+        <th>Frame C</th>
         <th>Reviewed</th>
         <th>Status</th>
         <th>Delete</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let log of logs_to_show">
+      <tr *ngFor="let log of logs_to_show | filter:filtered | paginate: { itemsPerPage: 100, currentPage: p }; let i = index">
         <td>{{ log.id }}</td>
+        <td>{{ log.file }}</td>
         <td>{{ log.date }}</td>
 <!--         <td style="width: 15%;">{{ log.file }}</td> -->
         <td>{{ log.lat_p }}</td>
@@ -70,6 +92,8 @@
             <img [src]=pathImage(log.image_path) alt="" onerror="errorImage(this)" />
           </figure>
         </td>
+        <td>{{ log.video_time }}</td>
+        <td>{{ log.frame_c }}</td>
         <td>{{ log.last_time_reviewed }}</td>
         <td>
             <div ngbDropdown class="d-inline-block">
@@ -82,11 +106,19 @@
             </div>
         </td>
         <td>
-          <button (click)="deleteRecord(log)">Borrar</button>
+            <div ngbDropdown class="d-inline-block">
+              <button class="btn btn-outline-primary" id="dropdownBasic1" ngbDropdownToggle>{{log.deleted}}</button>
+              <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
+                <tr *ngFor="let deleted of deleted_edit">
+                  <button ngbDropdownItem (click)="editDeleteLog(log,deleted)">{{deleted}}</button>
+              </tr>
+              </div>
+            </div>
         </td>
       </tr>
     </tbody>
   </table>
+  <pagination-controls (pageChange)="p = $event"></pagination-controls>
 </div>
 
 <div class="modal is-active" *ngIf="displayModal">

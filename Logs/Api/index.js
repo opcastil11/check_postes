@@ -97,9 +97,9 @@ app.delete('/records', (req, res) => {
 
 app.put('/records/:id', (req, res) => {
 	var id = req.params.id;
-	console.log('editing: '+id);
 	var type = req.query.type;
 	var value = req.query.value;
+	console.log('editing: '+id+' type: '+type+" value: "+value);
 	var main_sheet = 'Datos'
 	var response = [];
 	var workbook = new Excel.Workbook();
@@ -110,9 +110,11 @@ app.put('/records/:id', (req, res) => {
 		        var row = worksheet.getRow(rowNumber);
 		        var cell = selectCellEdit(type);
 		        row.getCell(cell).value = value;
-		        row.getCell(12).value = moment().format('YYYY/MM/DDTHH:mm');
+		        row.getCell(24).value = moment().format('YYYY/MM/DDTHH:mm');
 		        if (type == 'dmin_telecom'){
-		        	if (value < 4){
+		        	if (value == 0){
+		        		row.getCell(5).value = 'Indeterminado';
+		        	}else if (value > 4.5){
 		        		row.getCell(5).value = 'En norma';
 		        	}else{
 		        		row.getCell(5).value = 'Fuera de norma';
@@ -128,25 +130,27 @@ app.put('/records/:id', (req, res) => {
 	});
 });
 
-app.delete('/records/:id', (req, res) => {
-	var id = req.params.id;
-	console.log('deleting: '+id);
-	var main_sheet = 'Datos'
-	var response = [];
-	var workbook = new Excel.Workbook();
-	workbook.xlsx.readFile(outputeExcelFile).then(function() {
-		var worksheet = workbook.getWorksheet(main_sheet);
-	        worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
-	        if (id == row.values[1]){
-		        row.values = [];
-		        worksheet.spliceRows(rowNumber,1);
-		        row.commit();
-		        return workbook.xlsx.writeFile(outputeExcelFile);
-	        }
-	    });
-	res.send(response);
-	});
-});
+// app.delete('/records/:id', (req, res) => {
+// 	var id = req.params.id;
+// 	console.log('deleting: '+id);
+// 	var main_sheet = 'Datos'
+// 	var response = [];
+// 	var workbook = new Excel.Workbook();
+// 	workbook.xlsx.readFile(outputeExcelFile).then(function() {
+// 		var worksheet = workbook.getWorksheet(main_sheet);
+// 	        worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+// 	        if (id == row.values[1]){
+// 		         var row = worksheet.getRow(rowNumber);
+// 		         row.getCell(26).value = 'deleted';
+// 		        //row.values = [];
+// 		        //worksheet.spliceRows(rowNumber,1);
+// 		        row.commit();	        
+// 		        return workbook.xlsx.writeFile(outputeExcelFile);
+// 	        }
+// 	    });
+// 	res.send(response);
+// 	});
+// });
 
 app.get('/clear', function(req, res){
   clearExcels();
@@ -154,6 +158,11 @@ app.get('/clear', function(req, res){
 });
 
 app.get('/download', function(req, res){
+  const file = outputeExcelFile;
+  res.download(file); // Set disposition and send it.
+});
+
+app.get('/download_final', function(req, res){
   const file = outputeExcelFile;
   res.download(file); // Set disposition and send it.
 });
@@ -196,13 +205,17 @@ let selectCellEdit = function (type){
 	  case 'dmin_telecom':
 	  	return 4;
 	  case 'status':
-	    return 13;
+	    return 25;
+	  case 'deleted':
+	    return 26;
 	  default:
 	  	return null
 	}
 
 };
 
+
+//Data used in Frontend
 let parseRecordsOutput = function(record) {
     var result = {
 			        id: record[1],
@@ -210,14 +223,17 @@ let parseRecordsOutput = function(record) {
 			        date: record[3],
 			        dmin_telecom: record[4],
 			        norme: record[5],
-			        lat_p: record[6],
-			        lon_p: record[7],
-			        video_name: record[8],
-			        video_time: record[9],
-			        image: record[10],
-			        image_path: record[11],
-			        last_time_reviewed: record[12],
-			        status: record[13],
+			        lat_p: record[8],
+			        lon_p: record[9],
+			        video_name: record[12],
+			        video_time: record[13],
+			        frame_c: record[17],
+			        image: record[19],
+			        image_path: record[20],
+			        direction: record[21],
+			        last_time_reviewed: record[24],
+			        status: record[25],
+			        deleted: record[26],
 
 			    };
     return result 
@@ -227,14 +243,26 @@ let parseRecordsOutput = function(record) {
 let parseRecords = function(folder, file, record) {
 
     var id = id_record;
-    var date = record[3];
-    var dmin_telecom = record[4];
-    var norme = record[5];
-    var lat_p = record[6];
-    var lon_p = record[7];
-    var video_name = record[8];
-    var video_time = record[9];
-    var image = record[10];
+    var date = record[2];
+    var dmin_telecom = record[3];
+    var norme = record[4];
+    var lat_p = record[5];
+    var lon_p = record[6];
+    var utm_x = record[7];
+    var utm_y = record[8];
+    var video_name = record[9];
+    var video_time = record[10];
+    var video_name_ref = record[11];
+    var video_time_ref = record[12];
+    var height_p_ref = record[13];
+    var frame_c = record[14];
+    var frame = record[15];
+    var image = record[16];
+    var direction = record[17];
+    var crosstree_q = 0;
+    var telecom_c = 'telecom_c';
+	var comune = 'RM';
+    var region = 'RM';
     var image_path = folder+"/"+image;
 
     var result = {
@@ -243,14 +271,27 @@ let parseRecords = function(folder, file, record) {
 			        date: date,
 			        dmin_telecom: dmin_telecom,
 			        norme: norme,
+			        crosstree_q: crosstree_q,
+			        telecom_c: telecom_c,
 			        lat_p: lat_p,
 			        lon_p: lon_p,
+			        utm_x: utm_x,
+			        utm_y: utm_y,
 			        video_name: video_name,
 			        video_time: video_time,
+			        video_name_ref: video_name_ref,
+			        video_time_ref: video_time_ref,
+			        height_p_ref: height_p_ref,
+			        frame_c: frame_c,
+			        frame: frame,
 			        image: image,
 			        image_path: image_path,
+			        direction: direction,
+			        region: region,
+			        comune: comune,
 			        last_time_reviewed: '',
-			        status: 'unreviewed'
+			        status: 'unreviewed',
+			        deleted: 'active'
 
 			    };
     id_record = id_record + 1;
@@ -309,14 +350,27 @@ async function outputExcel(records){
 	 {header: 'Date', key: 'date'},
      {header: 'Dmin Telecom', key: 'dmin_telecom'},
      {header: 'Norme', key: 'norme'},
-     {header: 'Latitude Poste', key: 'lat_p'},
-     {header: 'Longitude Poste', key: 'lon_p'},
+     {header: 'Crosstree Count', key: 'crosstree_q'},
+     {header: 'Telecom Companies', key: 'telecom_c'},
+     {header: 'Latitude', key: 'lat_p'},
+     {header: 'Longitude', key: 'lon_p'},
+     {header: 'UTM x', key: 'utm_x'},
+     {header: 'UTM y', key: 'utm_y'},
      {header: 'Video Name', key: 'video_name'},
      {header: 'Video Time', key: 'video_time'},
+     {header: 'Video Name Reference', key: 'video_name_ref'},
+     {header: 'Video Time Reference', key: 'video_time_ref'},
+     {header: 'Reference Height', key: 'height_p_ref'},
+     {header: 'Frame Catenary', key: 'frame_c'},
+     {header: 'Frame', key: 'frame'},     
      {header: 'Image', key: 'image'},
      {header: 'Image Location', key: 'image_path'},
+     {header: 'Direction', key: 'direcion'},
+     {header: 'Comune', key: 'comune'},
+     {header: 'Region', key: 'region'},
      {header: 'Last Time Reviewed', key: 'last_time_reviewed'},
-     {header: 'Status', key: 'status'}
+     {header: 'Status', key: 'status'},
+     {header: 'Deleted', key: 'deleted'}
 
 	];
 	records.forEach(function (record) {
@@ -326,14 +380,27 @@ async function outputExcel(records){
 				        date: record['date'],
 				        dmin_telecom: record['dmin_telecom'],
 				        norme: record['norme'],
+				        crosstree_q: record['crosstree_q'],
+				        telecom_c: record['telecom_c'],
+				        utm_x: record['utm_x'],
+				        utm_y: record['utm_y'],
 				        lat_p: record['lat_p'],
 				        lon_p: record['lon_p'],
 				        video_name: record['video_name'],
 				        video_time: record['video_time'],
+				        video_name_ref: record['video_name_ref'],
+				        video_time_ref: record['video_time_ref'],
+				        height_p_ref: record['height_p_ref'],
+				        frame_c: record['frame_c'],
+						frame: record['frame'],
 				        image: record['image'],
 				        image_path: record['image_path'],
+				        direcion: record['direcion'],
+				        comune: record['comune'],
+				        region: record['region'],
 				        last_time_reviewed: record['last_time_reviewed'],
-				        status: record['status']
+				        status: record['status'],
+				        deleted: record['deleted']
 
 				    };
 		worksheet.addRow(data);

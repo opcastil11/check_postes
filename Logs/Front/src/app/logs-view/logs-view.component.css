@@ -1,22 +1,33 @@
-td:first-child + td + td
+td:first-child + td
  { 
-  width: 50% ;
-  overflow-wrap: break-word;
+  width: 11% ;
+  overflow-wrap: anywhere;
 
  }
 td:first-child + td + td + td
  { 
-  width: 50% ;
-  overflow-wrap: break-word;
+  width: 5% ;
+  overflow-wrap: anywhere;
 
  }
- td:first-child + td + td + td + td
+td:first-child + td + td + td + td
  { 
-  width: 50% ;
-  overflow-wrap: break-word;
+  width: 5% ;
+  overflow-wrap: anywhere;
 
  }
+ td:first-child + td + td + td + td + td
+ { 
+  width: 5% ;
+  overflow-wrap: anywhere;
 
+ }
+ td:first-child + td + td + td + td + td + td + td + td + td
+ { 
+  width: 7% ;
+  overflow-wrap: anywhere;
+
+ }
 .dropbtn {
   background-color: #3498DB;
   color: white;
