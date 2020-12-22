@@ -10,7 +10,6 @@ const ip_host = 'localhost'
 const staticPath = path.join(__dirname, 'public');
 const indexFile = path.join(__dirname, 'public')+'/index.html';
 
-//'../Front/dist/camera-logs-app/index.html'
 var excelRecords = [];
 var folder_quantity = 0;
 var folder_quantity_count = 0;
@@ -162,9 +161,37 @@ app.get('/download', function(req, res){
   res.download(file); // Set disposition and send it.
 });
 
-app.get('/download_final', function(req, res){
-  const file = outputeExcelFile;
-  res.download(file); // Set disposition and send it.
+app.get('/download_final', (req, res) => {
+  var file_name = moment().format('YYYY_MM_DDTHH:mm');
+  res.writeHead(200, {
+    'Content-Disposition': `attachment; filename=${file_name}_final.xlsx`,
+    'Transfer-Encoding': 'chunked',
+    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+  var workbook = new Excel.stream.xlsx.WorkbookWriter({ stream: res })
+  var worksheet = workbook.addWorksheet('Datos');
+  var header = ['Fecha evaluación Catenaria', 
+                'DMIN TELECOM (suelo)',
+                'medición es < 4,5',
+                'Cantidad de crucetillas',
+                'Empresa Telecomunicaciones',
+                'Latitud',
+                'Longitud',
+                'UTM X',
+                'UTM Y',
+                'Dirección postal',
+                'Comuna',
+                'Region',
+                'Ref a Video',
+                ];
+  worksheet.addRow(header).commit();
+  results = getFinalRecords(worksheet,workbook);
+  // results.map(function(record) {
+  //   data = parseFinalResponse(record);
+  //   worksheet.addRow(data).commit()
+  // });
+  // worksheet.commit();
+  // workbook.commit();
 });
 
 // let getRecordsDb = function (){
@@ -239,6 +266,24 @@ let parseRecordsOutput = function(record) {
     return result 
 }
 
+let parseFinalResponse = function (record){
+	var response = [
+					record[3],
+					record[4],
+					record[5],
+					record[6],
+					record[7],
+					record[8],
+					record[9],
+					record[10],
+					record[11],
+					record[21],
+					record[22],
+					record[23],
+					record[13],
+				   ]
+	return response
+};
 
 let parseRecords = function(folder, file, record) {
 
@@ -297,6 +342,24 @@ let parseRecords = function(folder, file, record) {
     id_record = id_record + 1;
     return result 
 }
+
+function getFinalRecords(worksheet_f,workbook_f){
+	var main_sheet = 'Datos'
+	var workbook = new Excel.Workbook();
+	workbook.xlsx.readFile(outputeExcelFile).then(function() {
+		var worksheet = workbook.getWorksheet(main_sheet);
+	        worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+	          if (rowNumber > 1){
+	          	var data = parseFinalResponse(row.values);
+		        worksheet_f.addRow(data).commit();
+	      	  }
+	    });	
+	worksheet_f.commit();
+    workbook_f.commit();
+	});
+};
+
+
 
 let getRecords = function (folder,file_path,file){
 	var main_sheet = 'Sheet1'
