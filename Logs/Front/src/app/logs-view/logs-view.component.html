@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" style="max-width: 1500px;">
   <nav class="navbar">
     <div class="navbar-item">
       <h1 class="title is-4" style="margin-right:10px;">Display Events Detected
@@ -69,6 +69,7 @@
         <th>Frame C</th>
         <th>Reviewed</th>
         <th>Status</th>
+        <th>Check Height</th>
         <th>Delete</th>
       </tr>
     </thead>
@@ -101,6 +102,16 @@
               <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
                 <tr *ngFor="let status of status_edit">
                   <button ngbDropdownItem (click)="editStatusLog(log,status)">{{status}}</button>
+              </tr>
+              </div>
+            </div>
+        </td>
+        <td>
+            <div ngbDropdown class="d-inline-block">
+              <button class="btn btn-outline-primary" id="dropdownBasic1" ngbDropdownToggle>{{log.check_h}}</button>
+              <div ngbDropdownMenu aria-labelledby="dropdownBasic1" style="height: 85;">
+                <tr *ngFor="let check of check_edit">
+                  <button ngbDropdownItem (click)="editCheckLog(log,check)">{{check}}</button>
               </tr>
               </div>
             </div>

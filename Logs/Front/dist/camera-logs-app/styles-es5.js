@@ -526,11 +526,11 @@
   /***/
   function _(module, exports, __webpack_require__) {
     __webpack_require__(
-    /*! /home/kai/Escritorio/PROGRAMACION/checkPostes/Logs/Front/node_modules/bootstrap/dist/css/bootstrap.min.css */
+    /*! /home/kai/Desktop/PROGRAMACION/check_postes/check_postes/Logs/Front/node_modules/bootstrap/dist/css/bootstrap.min.css */
     "./node_modules/bootstrap/dist/css/bootstrap.min.css");
 
     module.exports = __webpack_require__(
-    /*! /home/kai/Escritorio/PROGRAMACION/checkPostes/Logs/Front/src/styles.css */
+    /*! /home/kai/Desktop/PROGRAMACION/check_postes/check_postes/Logs/Front/src/styles.css */
     "./src/styles.css");
     /***/
   }

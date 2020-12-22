@@ -11,6 +11,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
   button_status: string;
   button_norme: string;
   button_deleted: string;
+  button_check: string;
   filterByStatus: string;
   filterByNorme: string;
   filterByDeleted: string;
@@ -21,6 +22,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
   normes: any;
   deleted_s: any;
   deleted_edit: any;
+  check_edit: any;
   displayModal = false;
   currentLog: any;
   intervalId: any;
@@ -45,11 +47,13 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     this.button_status = "All";
     this.button_norme = "All";
     this.button_deleted = "All";
+    this.button_check = "All";
     this.status_s = ["All","reviewed","unreviewed"];
     this.status_edit = ["reviewed","unreviewed"];
     this.deleted_s = ["All","active","deleted"];
     this.deleted_edit = ["active","deleted"];
     this.normes = ["All","Fuera de norma","En norma"];
+    this.check_edit = ["correct","check"];
     setTimeout(function(){ location.reload(); }, 1200000);
     const fetchResponse = await fetch('http://localhost:9091/records');
     const responseObject = await fetchResponse.json();
@@ -174,6 +178,23 @@ export class LogsViewComponent implements OnInit, OnDestroy {
 
   };
 
+  editCheckLog(log: any, check:any){
+    var id = log.id;
+    var requestOptions = {                                                                                                                                                                                 
+      headers: this.corsHeaders, 
+    };
+    var path = 'http://localhost:9091/records/'+id+'?type=check_h&value='+check;
+    this.http.put<any>(path, requestOptions).subscribe(data => {
+      var log_d = this.logs.filter(log => log.id == id);
+      log_d.check_h = data[26];
+      log.check_h = data[26];
+      this.filterLogs();
+    },error => {
+        console.error('There was an error!', error);
+    })
+
+  };
+
   editDeleteLog(log: any, deleted:any){
     var id = log.id;
     var requestOptions = {                                                                                                                                                                                 
@@ -182,8 +203,8 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     var path = 'http://localhost:9091/records/'+id+'?type=deleted&value='+deleted; 
     this.http.put<any>(path, requestOptions).subscribe(data => {
       var log_d = this.logs.filter(log => log.id == id);
-      log_d.deleted = data[26];
-      log.deleted = data[26];
+      log_d.deleted = data[27];
+      log.deleted = data[27];
       this.filterLogs();
     },error => {
         console.error('There was an error!', error);

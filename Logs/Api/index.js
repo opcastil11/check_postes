@@ -183,6 +183,8 @@ app.get('/download_final', (req, res) => {
                 'Comuna',
                 'Region',
                 'Ref a Video',
+                'Checkear Altura',
+                'Borrado',
                 ];
   worksheet.addRow(header).commit();
   results = getFinalRecords(worksheet,workbook);
@@ -233,8 +235,10 @@ let selectCellEdit = function (type){
 	  	return 4;
 	  case 'status':
 	    return 25;
-	  case 'deleted':
+	  case 'check_h':
 	    return 26;
+	  case 'deleted':
+	    return 27;
 	  default:
 	  	return null
 	}
@@ -260,7 +264,8 @@ let parseRecordsOutput = function(record) {
 			        direction: record[21],
 			        last_time_reviewed: record[24],
 			        status: record[25],
-			        deleted: record[26],
+			        check_h: record[26],
+			        deleted: record[27],
 
 			    };
     return result 
@@ -281,6 +286,8 @@ let parseFinalResponse = function (record){
 					record[22],
 					record[23],
 					record[13],
+					record[26],
+					record[27],
 				   ]
 	return response
 };
@@ -336,6 +343,7 @@ let parseRecords = function(folder, file, record) {
 			        comune: comune,
 			        last_time_reviewed: '',
 			        status: 'unreviewed',
+			        check_h: 'correct',
 			        deleted: 'active'
 
 			    };
@@ -428,11 +436,12 @@ async function outputExcel(records){
      {header: 'Frame', key: 'frame'},     
      {header: 'Image', key: 'image'},
      {header: 'Image Location', key: 'image_path'},
-     {header: 'Direction', key: 'direcion'},
+     {header: 'Direction', key: 'direction'},
      {header: 'Comune', key: 'comune'},
      {header: 'Region', key: 'region'},
      {header: 'Last Time Reviewed', key: 'last_time_reviewed'},
      {header: 'Status', key: 'status'},
+     {header: 'Check Height', key: 'check_h'},
      {header: 'Deleted', key: 'deleted'}
 
 	];
@@ -458,11 +467,12 @@ async function outputExcel(records){
 						frame: record['frame'],
 				        image: record['image'],
 				        image_path: record['image_path'],
-				        direcion: record['direcion'],
+				        direction: record['direction'],
 				        comune: record['comune'],
 				        region: record['region'],
 				        last_time_reviewed: record['last_time_reviewed'],
 				        status: record['status'],
+				        check_h: record['check_h'],
 				        deleted: record['deleted']
 
 				    };
